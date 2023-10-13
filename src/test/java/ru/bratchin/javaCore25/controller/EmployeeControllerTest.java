@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.service.impl.EmployeeMaxSizeTenService;
 
@@ -116,6 +116,16 @@ class EmployeeControllerTest {
                 assertThat(employees).contains(testEmployee);
                 assertThat(employees.size()).isEqualTo(9);
             }
+
+            @Test
+            void findAll() {
+                ResponseEntity<List<Employee>> response
+                        = restTemplate.exchange("/employee/findAll", HttpMethod.GET, null, new ParameterizedTypeReference<List<Employee>>(){});
+
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                assertThat(response.getBody().size()).isEqualTo(9);
+            }
+
         }
 
         @Nested

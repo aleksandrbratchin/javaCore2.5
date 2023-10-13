@@ -62,6 +62,11 @@ public class EmployeeMaxSizeTenService implements EmployeeService {
                 .orElseThrow(EmployeeNotFoundException::new);
     }
 
+    @Override
+    public List<Employee> findAll() {
+        return employees;
+    }
+
     private Optional<Employee> filter(Employee em) {
         return employees.stream()
                 .filter(employee -> employee.getName().equals(em.getName()) && employee.getSurname().equals(em.getSurname()))

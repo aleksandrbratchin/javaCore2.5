@@ -48,6 +48,11 @@ public class EmployeeController {
         return ResponseEntity.ok(service.find(employee));
     }
 
+    @GetMapping("/findAll")
+    public ResponseEntity<?> findAll() {
+        return ResponseEntity.ok(service.findAll());
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void errorParam() {
