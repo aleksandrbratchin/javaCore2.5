@@ -8,23 +8,24 @@ import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.service.api.EmployeeService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @Service
 public class EmployeeMaxSizeTenService implements EmployeeService {
 
     private final int maxSize = 10;
 
-    private List<Employee> employees = new ArrayList<>(
-            List.of(new Employee("Малышева", "Амалия"),
-                    new Employee("Козловский", "Денис"),
-                    new Employee("Соловьева", "Серафима"),
-                    new Employee("Макарова", "Дарья"),
-                    new Employee("Лебедева", "Таисия"),
-                    new Employee("Романов", "Артём"),
-                    new Employee("Широков", "Павел"),
-                    new Employee("Кудрявцев", "Лев")
+    private Map<String, Employee> employees = new HashMap<>(
+            Map.of("Малышева Амалия", new Employee("Малышева", "Амалия"),
+                    "Козловский Денис", new Employee("Козловский", "Денис"),
+                    "Соловьева Серафима", new Employee("Соловьева", "Серафима"),
+                    "Макарова Дарья", new Employee("Макарова", "Дарья"),
+                    "Лебедева Таисия", new Employee("Лебедева", "Таисия"),
+                    "Романов Артём", new Employee("Романов", "Артём"),
+                    "Широков Павел", new Employee("Широков", "Павел"),
+                    "Кудрявцев Лев", new Employee("Кудрявцев", "Лев")
             ));
 
     @Override
@@ -32,45 +33,45 @@ public class EmployeeMaxSizeTenService implements EmployeeService {
         if (maxSize <= employees.size()) {
             throw new EmployeeStorageIsFullException();
         }
-        filter(employee)
-                .ifPresentOrElse(
-                        employee1 -> {
-                            throw new EmployeeAlreadyAddedException();
-                        },
-                        () -> employees.add(employee)
-                );
-        return employee;
+        var key = getKey(employee);
+        if (employees.containsKey(key)) {
+            throw new EmployeeAlreadyAddedException();
+        } else {
+            employees.put(key, employee);
+            return employee;
+        }
+
     }
 
     @Override
     public Employee delete(Employee employee) {
-        filter(employee)
-                .ifPresentOrElse(
-                        employee1 ->
-                                employees.remove(employee1)
-                        ,
-                        () -> {
-                            throw new EmployeeNotFoundException();
-                        }
-                );
-        return employee;
+        var key = getKey(employee);
+        if (employees.containsKey(key)) {
+            employees.remove(key, employee);
+            return employee;
+        } else {
+            throw new EmployeeNotFoundException();
+        }
     }
 
     @Override
     public Employee find(Employee employee) {
-        return filter(employee)
-                .orElseThrow(EmployeeNotFoundException::new);
+        var key = getKey(employee);
+        if (employees.containsKey(key)) {
+            return employees.get(key);
+        } else {
+            throw new EmployeeNotFoundException();
+        }
     }
 
     @Override
     public List<Employee> findAll() {
-        return employees;
+        return new ArrayList<>(employees.values());
     }
 
-    private Optional<Employee> filter(Employee em) {
-        return employees.stream()
-                .filter(employee -> employee.getName().equals(em.getName()) && employee.getSurname().equals(em.getSurname()))
-                .findFirst();
+
+    private String getKey(Employee employee) {
+        return employee.getSurname() + " " + employee.getName();
     }
 
 }

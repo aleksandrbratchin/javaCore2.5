@@ -10,8 +10,8 @@ import ru.bratchin.javaCore25.exception.EmployeeStorageIsFullException;
 import ru.bratchin.javaCore25.model.entity.Employee;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -31,19 +31,19 @@ class EmployeeMaxSizeTenServiceTest {
     @BeforeEach
     public void initEach() throws IllegalAccessException {
         service = new EmployeeMaxSizeTenService();
-        List<Employee> testEmployees = new ArrayList<>(
-                List.of(
-                        new Employee("Малышева", "Амалия"),
-                        new Employee("Козловский", "Денис"),
-                        new Employee("Соловьева", "Серафима"),
-                        new Employee("Макарова", "Дарья"),
-                        new Employee("Лебедева", "Таисия"),
-                        new Employee("Романов", "Артём"),
-                        new Employee("Широков", "Павел"),
-                        new Employee("Кудрявцев", "Лев"),
-                        new Employee("Филиппова", "Алиса")
-                )
-        );
+
+        Map<String, Employee> testEmployees = new HashMap<>(
+                Map.of("Малышева Амалия", new Employee("Малышева", "Амалия"),
+                        "Козловский Денис", new Employee("Козловский", "Денис"),
+                        "Соловьева Серафима", new Employee("Соловьева", "Серафима"),
+                        "Макарова Дарья", new Employee("Макарова", "Дарья"),
+                        "Лебедева Таисия", new Employee("Лебедева", "Таисия"),
+                        "Романов Артём", new Employee("Романов", "Артём"),
+                        "Широков Павел", new Employee("Широков", "Павел"),
+                        "Кудрявцев Лев", new Employee("Кудрявцев", "Лев"),
+                        "Филиппова Алиса", new Employee("Филиппова", "Алиса")
+                ));
+
         fieldEmployees.set(service, testEmployees);
     }
 
@@ -54,11 +54,11 @@ class EmployeeMaxSizeTenServiceTest {
             Employee employee = new Employee("Белякова", "Антонина");
 
             Employee newEmployee = service.add(employee);
-            var employees = (List<Employee>) fieldEmployees.get(service);
+            var employees = (Map<String, Employee>) fieldEmployees.get(service);
 
             assertThat(employee).isEqualTo(newEmployee);
             assertThat(employees.size()).isEqualTo(10);
-            assertThat(employees).contains(employee);
+            assertThat(employees).containsValue(employee);
         }
 
         @Test
@@ -66,11 +66,11 @@ class EmployeeMaxSizeTenServiceTest {
             Employee employee = new Employee("Филиппова", "Алиса");
 
             Employee newEmployee = service.delete(employee);
-            var employees = (List<Employee>) fieldEmployees.get(service);
+            var employees = (Map<String, Employee>) fieldEmployees.get(service);
 
             assertThat(employee).isEqualTo(newEmployee);
             assertThat(employees.size()).isEqualTo(8);
-            assertThat(employees).doesNotContain(employee);
+            assertThat(employees).doesNotContainValue(employee);
         }
 
         @Test
@@ -78,7 +78,7 @@ class EmployeeMaxSizeTenServiceTest {
             Employee employee = new Employee("Филиппова", "Алиса");
 
             Employee newEmployee = service.find(employee);
-            var employees = (List<Employee>) fieldEmployees.get(service);
+            var employees = (Map<String, Employee>) fieldEmployees.get(service);
 
             assertThat(employee).isEqualTo(newEmployee);
             assertThat(employees.size()).isEqualTo(9);
