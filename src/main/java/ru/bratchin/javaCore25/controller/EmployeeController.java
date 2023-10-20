@@ -56,7 +56,6 @@ public class EmployeeController {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void errorParam() {
-        System.out.println("sd");
     }
 
 }
