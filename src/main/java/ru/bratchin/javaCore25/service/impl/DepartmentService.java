@@ -24,18 +24,18 @@ public class DepartmentService implements DepartmentServiceApi {
     @Override
     public Employee maxSalary(String department) {
         return maxSalary(
-                getAllEmployee(department)
+                allEmployeesInTheDepartment(department)
         );
     }
 
     @Override
     public Employee minSalary(String department) {
         return minSalary(
-                getAllEmployee(department)
+                allEmployeesInTheDepartment(department)
         );
     }
 
-    private List<Employee> getAllEmployee(String department) {
+    private List<Employee> allEmployeesInTheDepartment(String department) {
         return repository
                 .findAll(new EmployeeEqualsDepartmentSpecification(department))
                 .values()
@@ -46,13 +46,13 @@ public class DepartmentService implements DepartmentServiceApi {
     private Employee maxSalary(List<Employee> employees) {
         return employees.stream().max(
                 Comparator.comparingDouble(Employee::getSalary)
-        ).orElseThrow(() -> new RuntimeException("Ошибка при поиске максимального числа")); //todo
+        ).orElse(null);
     }
 
     private Employee minSalary(List<Employee> employees) {
         return employees.stream().min(
                 Comparator.comparingDouble(Employee::getSalary)
-        ).orElseThrow(() -> new RuntimeException("Ошибка при поиске минимального числа")); //todo
+        ).orElse(null);
     }
 
     @Override

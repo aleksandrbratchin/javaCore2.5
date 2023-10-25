@@ -26,8 +26,7 @@ public class EmployeeMaxSizeTenService implements EmployeeService {
         if (maxSize <= repository.findAll().size()) {
             throw new EmployeeStorageIsFullException();
         }
-        repository.create(employee);
-        return employee;
+        return repository.create(employee);
     }
 
     @Override

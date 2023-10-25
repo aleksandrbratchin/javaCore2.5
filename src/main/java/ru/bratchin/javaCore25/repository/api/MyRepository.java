@@ -16,13 +16,13 @@ public interface MyRepository<E, K> {
 
     void create(List<E> e);
 
-    void create(E e);
+    E create(E e);
 
 /*    void update(E e);
 
     void update(List<E> e);*/
 
-    void delete(E e);
+    E delete(E e);
 
     void deleteAll();
 

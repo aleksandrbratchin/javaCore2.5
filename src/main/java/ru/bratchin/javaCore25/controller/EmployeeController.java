@@ -2,13 +2,13 @@ package ru.bratchin.javaCore25.controller;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.service.api.EmployeeService;
-import ru.bratchin.javaCore25.service.impl.EmployeeMaxSizeTenService;
 
 @RestController
 @RequestMapping("/employee")
@@ -17,14 +17,14 @@ public class EmployeeController {
 
     private final EmployeeService service;
 
-    public EmployeeController(EmployeeMaxSizeTenService service) {
+    public EmployeeController(@Qualifier("employeeMaxSizeTenService") EmployeeService service) {
         this.service = service;
     }
 
     @GetMapping("/add")
     public ResponseEntity<?> add(
-            @RequestParam @NotBlank String name,
-            @RequestParam @NotBlank String surname
+            @RequestParam(required = false) @NotBlank String name,
+            @RequestParam(required = false) @NotBlank String surname
     ) {
         Employee employee = new Employee(surname, name);
         return ResponseEntity.ok(service.add(employee));
@@ -32,8 +32,8 @@ public class EmployeeController {
 
     @GetMapping("/delete")
     public ResponseEntity<?> delete(
-            @RequestParam @NotBlank String name,
-            @RequestParam @NotBlank String surname
+            @RequestParam(required = false) @NotBlank String name,
+            @RequestParam(required = false) @NotBlank String surname
     ) {
         Employee employee = new Employee(surname, name);
         return ResponseEntity.ok(service.delete(employee));
@@ -41,8 +41,8 @@ public class EmployeeController {
 
     @GetMapping("/find")
     public ResponseEntity<?> find(
-            @RequestParam @NotBlank String name,
-            @RequestParam @NotBlank String surname
+            @RequestParam(required = false) @NotBlank String name,
+            @RequestParam(required = false) @NotBlank String surname
     ) {
         Employee employee = new Employee(surname, name);
         return ResponseEntity.ok(service.find(employee));

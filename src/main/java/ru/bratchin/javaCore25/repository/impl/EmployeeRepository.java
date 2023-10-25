@@ -15,16 +15,7 @@ import java.util.stream.Collectors;
 
 @Repository
 public class EmployeeRepository implements MyRepository<Employee, String> {
-    /*    private Map<String, Employee> employees = new HashMap<>(
-                Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", "2", 83166.43),
-                        "Козловский Денис", new Employee("Козловский", "Денис", "1", 60250.60),
-                        "Соловьева Серафима", new Employee("Соловьева", "Серафима", "3", 59343.29),
-                        "Макарова Дарья", new Employee("Макарова", "Дарья", "1", 82042.89),
-                        "Лебедева Таисия", new Employee("Лебедева", "Таисия", "5", 72881.88),
-                        "Романов Артём", new Employee("Романов", "Артём", "2", 62761.97),
-                        "Широков Павел", new Employee("Широков", "Павел", "4", 97159.11),
-                        "Кудрявцев Лев", new Employee("Кудрявцев", "Лев", "2", 89845.70)
-                ));*/
+
     private Map<String, Employee> employees = new HashMap<>();
 
     @Override
@@ -48,13 +39,13 @@ public class EmployeeRepository implements MyRepository<Employee, String> {
     }
 
     @Override
-    public void create(Employee employee) {
+    public Employee create(Employee employee) {
         var key = getKey(employee);
-        if (employees.containsKey(key)) {
-            throw new EmployeeAlreadyAddedException();
-        } else {
-            employees.put(key, employee);
-        }
+        Optional.ofNullable(employees.put(key, employee))
+                .ifPresent(employee1 -> {
+                    throw new EmployeeAlreadyAddedException();
+                });
+        return employees.get(key);
     }
 
     @Override
@@ -62,33 +53,11 @@ public class EmployeeRepository implements MyRepository<Employee, String> {
         employees.forEach(this::create);
     }
 
-/*    @Override
-    public void update(Employee employee) {
-        var oldEmployee = employees.stream()
-                .filter(employee1 -> employee.getId().equals(employee1.getId()))
-                .findFirst()
-                .orElseThrow(
-                        () -> new NoSuchElementException("Попытка найти несуществующий элемент")
-                );
-        oldEmployee.setDepartment(employee.getDepartment());
-        oldEmployee.setSalary(employee.getSalary());
-    }
-
     @Override
-    public void update(List<Employee> employees) {
-        for (Employee employee : employees) {
-            update(employee);
-        }
-    }*/
-
-    @Override
-    public void delete(Employee employee) {
+    public Employee delete(Employee employee) {
         var key = getKey(employee);
-        if (employees.containsKey(key)) {
-            employees.remove(key, employee);
-        } else {
-            throw new EmployeeNotFoundException();
-        }
+        return Optional.ofNullable(employees.remove(key)).orElseThrow(EmployeeNotFoundException::new);
+
     }
 
     @Override

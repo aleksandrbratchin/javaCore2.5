@@ -142,7 +142,7 @@ class EmployeeRepositoryTest {
         repository.delete(employee);
         var employees = (Map<String, Employee>) fieldEmployees.get(repository);
 
-        assertThat(employees.size()).isEqualTo(10);
+        assertThat(employees.size()).isEqualTo(9);
         assertThat(employees).doesNotContainValue(employee);
     }
 

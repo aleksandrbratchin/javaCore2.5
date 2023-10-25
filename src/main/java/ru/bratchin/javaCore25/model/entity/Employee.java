@@ -21,6 +21,11 @@ public class Employee {
         this.name = name;
     }
 
+    public Employee() {
+        surname = null;
+        name = null;
+    }
+
     public String getSurname() {
         return surname;
     }
