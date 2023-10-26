@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 class DepartmentServiceTest {
 
@@ -84,47 +85,91 @@ class DepartmentServiceTest {
     @Nested
     class AllError {
 
-        @BeforeEach
-        public void initEach() throws IllegalAccessException {
-            repository = new EmployeeRepository();
-            service = new DepartmentService(repository);
+        @Nested
+        class SalaryIsNull {
+            @BeforeEach
+            public void initEach() throws IllegalAccessException {
+                repository = new EmployeeRepository();
+                service = new DepartmentService(repository);
 
-            Map<String, Employee> testEmployees = new HashMap<>();
+                Map<String, Employee> testEmployees = new HashMap<>(
+                        Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", "2", null),
+                                "Козловский Денис", new Employee("Козловский", "Денис", "1", 60250.60),
+                                "Соловьева Серафима", new Employee("Соловьева", "Серафима", "3", 59343.29),
+                                "Макарова Дарья", new Employee("Макарова", "Дарья", "1", 82042.89),
+                                "Лебедева Таисия", new Employee("Лебедева", "Таисия", "5", 72881.88),
+                                "Романов Артём", new Employee("Романов", "Артём", "2", 62761.97),
+                                "Широков Павел", new Employee("Широков", "Павел", "4", 97159.11),
+                                "Кудрявцев Лев", new Employee("Кудрявцев", "Лев", "2", 89845.70),
+                                "Филиппова Алиса", new Employee("Филиппова", "Алиса", "5", 79209.12)
+                        ));
 
-            fieldEmployees.set(repository, testEmployees);
+                fieldEmployees.set(repository, testEmployees);
+            }
+
+            @Test
+            void maxSalary() {
+
+                Throwable thrown = catchThrowable(() -> service.maxSalary("2"));
+
+                assertThat(thrown).isInstanceOf(NullPointerException.class);
+            }
+
+            @Test
+            void minSalary() {
+
+                Throwable thrown = catchThrowable(() -> service.minSalary("2"));
+
+                assertThat(thrown).isInstanceOf(NullPointerException.class);
+            }
+
         }
 
-        @Test
-        void maxSalary() {
+        @Nested
+        class EmployeesIsEmpty {
+            @BeforeEach
+            public void initEach() throws IllegalAccessException {
+                repository = new EmployeeRepository();
+                service = new DepartmentService(repository);
 
-            Employee maxSalaryEmployee = service.maxSalary("2");
+                Map<String, Employee> testEmployees = new HashMap<>();
 
-            assertThat(maxSalaryEmployee).isNull();
+                fieldEmployees.set(repository, testEmployees);
+            }
+
+            @Test
+            void maxSalary() {
+
+                Employee maxSalaryEmployee = service.maxSalary("2");
+
+                assertThat(maxSalaryEmployee).isNull();
+            }
+
+            @Test
+            void minSalary() {
+
+                Employee minSalaryEmployee = service.minSalary("2");
+
+                assertThat(minSalaryEmployee).isNull();
+            }
+
+            @Test
+            void findByDepartment() {
+                Map<String, List<Employee>> all = service.findByDepartment("2");
+
+                assertThat(all.size()).isEqualTo(0);
+                assertThat(all.get("2")).isNull();
+            }
+
+            @Test
+            void all() {
+
+                Map<String, List<Employee>> all = service.all();
+
+                assertThat(all.size()).isEqualTo(0);
+            }
         }
 
-        @Test
-        void minSalary() {
-
-            Employee minSalaryEmployee = service.minSalary("2");
-
-            assertThat(minSalaryEmployee).isNull();
-        }
-
-        @Test
-        void findByDepartment() {
-            Map<String, List<Employee>> all = service.findByDepartment("2");
-
-            assertThat(all.size()).isEqualTo(0);
-            assertThat(all.get("2")).isNull();
-        }
-
-        @Test
-        void all() {
-
-            Map<String, List<Employee>> all = service.all();
-
-            assertThat(all.size()).isEqualTo(0);
-        }
     }
 
 

@@ -10,6 +10,7 @@ import ru.bratchin.javaCore25.specification.employee.EmployeeEqualsDepartmentSpe
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,13 +46,23 @@ public class DepartmentService implements DepartmentServiceApi {
 
     private Employee maxSalary(List<Employee> employees) {
         return employees.stream().max(
-                Comparator.comparingDouble(Employee::getSalary)
+                Comparator.comparingDouble(
+                        value -> Optional.ofNullable(value.getSalary())
+                                .orElseThrow(
+                                        () -> new NullPointerException("У сотрудника " + value.getSurname() + " " + value.getName() + " не указана заработная плата")
+                                )
+                )
         ).orElse(null);
     }
 
     private Employee minSalary(List<Employee> employees) {
         return employees.stream().min(
-                Comparator.comparingDouble(Employee::getSalary)
+                Comparator.comparingDouble(
+                        value -> Optional.ofNullable(value.getSalary())
+                                .orElseThrow(
+                                        () -> new NullPointerException("У сотрудника " + value.getSurname() + " " + value.getName() + " не указана заработная плата")
+                                )
+                )
         ).orElse(null);
     }
 
