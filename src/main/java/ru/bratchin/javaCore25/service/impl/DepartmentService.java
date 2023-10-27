@@ -88,12 +88,15 @@ public class DepartmentService implements DepartmentServiceApi {
         return repository.findAll()
                 .values()
                 .stream()
-                .collect(Collectors.groupingBy(
-                        employee -> Optional.ofNullable(employee.getDepartment()).orElseThrow(
-                                () -> new DepartmentIsNullException(
-                                        employee.getSurname() + " " + employee.getName()
-                                )
+                .collect(
+                        Collectors.groupingBy(
+                                employee -> Optional.ofNullable(employee.getDepartment())
+                                        .orElseThrow(
+                                                () -> new DepartmentIsNullException(
+                                                        employee.getSurname() + " " + employee.getName()
+                                                )
+                                        )
                         )
-                ));
+                );
     }
 }
