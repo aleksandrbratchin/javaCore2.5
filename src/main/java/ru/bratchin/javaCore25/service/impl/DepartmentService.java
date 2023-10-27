@@ -1,6 +1,8 @@
 package ru.bratchin.javaCore25.service.impl;
 
 import org.springframework.stereotype.Service;
+import ru.bratchin.javaCore25.exception.DepartmentIsNullException;
+import ru.bratchin.javaCore25.exception.SalaryIsNullException;
 import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.repository.api.MyRepository;
 import ru.bratchin.javaCore25.repository.impl.EmployeeRepository;
@@ -49,7 +51,7 @@ public class DepartmentService implements DepartmentServiceApi {
                 Comparator.comparingDouble(
                         value -> Optional.ofNullable(value.getSalary())
                                 .orElseThrow(
-                                        () -> new NullPointerException("У сотрудника " + value.getSurname() + " " + value.getName() + " не указана заработная плата")
+                                        () -> new SalaryIsNullException(value.getSurname() + " " + value.getName())
                                 )
                 )
         ).orElse(null);
@@ -60,7 +62,7 @@ public class DepartmentService implements DepartmentServiceApi {
                 Comparator.comparingDouble(
                         value -> Optional.ofNullable(value.getSalary())
                                 .orElseThrow(
-                                        () -> new NullPointerException("У сотрудника " + value.getSurname() + " " + value.getName() + " не указана заработная плата")
+                                        () -> new SalaryIsNullException(value.getSurname() + " " + value.getName())
                                 )
                 )
         ).orElse(null);
@@ -72,7 +74,13 @@ public class DepartmentService implements DepartmentServiceApi {
                 .findAll(new EmployeeEqualsDepartmentSpecification(department))
                 .values()
                 .stream()
-                .collect(Collectors.groupingBy(Employee::getDepartment));
+                .collect(Collectors.groupingBy(
+                        employee -> Optional.ofNullable(employee.getDepartment()).orElseThrow(
+                                () -> new DepartmentIsNullException(
+                                        employee.getSurname() + " " + employee.getName()
+                                )
+                        )
+                ));
     }
 
     @Override
@@ -80,6 +88,12 @@ public class DepartmentService implements DepartmentServiceApi {
         return repository.findAll()
                 .values()
                 .stream()
-                .collect(Collectors.groupingBy(Employee::getDepartment));
+                .collect(Collectors.groupingBy(
+                        employee -> Optional.ofNullable(employee.getDepartment()).orElseThrow(
+                                () -> new DepartmentIsNullException(
+                                        employee.getSurname() + " " + employee.getName()
+                                )
+                        )
+                ));
     }
 }

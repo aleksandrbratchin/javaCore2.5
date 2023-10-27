@@ -1,8 +1,11 @@
 package ru.bratchin.javaCore25.specification.employee;
 
 
+import ru.bratchin.javaCore25.exception.DepartmentIsNullException;
 import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.specification.MySpecification;
+
+import java.util.Optional;
 
 public class EmployeeEqualsDepartmentSpecification extends MySpecification<Employee> {
     private String department;
@@ -13,6 +16,11 @@ public class EmployeeEqualsDepartmentSpecification extends MySpecification<Emplo
 
     @Override
     public boolean test(Employee employee) {
-        return employee.getDepartment().equals(department);
+        return Optional.ofNullable(employee.getDepartment())
+                .orElseThrow(
+                        () -> new DepartmentIsNullException(
+                                employee.getSurname() + " " + employee.getName()
+                        )
+                ).equals(department);
     }
 }

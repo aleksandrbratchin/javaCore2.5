@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import ru.bratchin.javaCore25.exception.DepartmentIsNullException;
+import ru.bratchin.javaCore25.exception.SalaryIsNullException;
 import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.repository.impl.EmployeeRepository;
 
@@ -86,6 +88,66 @@ class DepartmentServiceTest {
     class AllError {
 
         @Nested
+        class DepartmentIsNull {
+            @BeforeEach
+            public void initEach() throws IllegalAccessException {
+                repository = new EmployeeRepository();
+                service = new DepartmentService(repository);
+
+                Map<String, Employee> testEmployees = new HashMap<>(
+                        Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", null, 83166.43),
+                                "Козловский Денис", new Employee("Козловский", "Денис", "1", 60250.60),
+                                "Соловьева Серафима", new Employee("Соловьева", "Серафима", "3", 59343.29),
+                                "Макарова Дарья", new Employee("Макарова", "Дарья", "1", 82042.89),
+                                "Лебедева Таисия", new Employee("Лебедева", "Таисия", "5", 72881.88),
+                                "Романов Артём", new Employee("Романов", "Артём", "2", 62761.97),
+                                "Широков Павел", new Employee("Широков", "Павел", "4", 97159.11),
+                                "Кудрявцев Лев", new Employee("Кудрявцев", "Лев", "2", 89845.70),
+                                "Филиппова Алиса", new Employee("Филиппова", "Алиса", "5", 79209.12)
+                        ));
+
+                fieldEmployees.set(repository, testEmployees);
+            }
+
+            @Test
+            void maxSalary() {
+
+                Throwable thrown = catchThrowable(() -> service.minSalary("2"));
+
+                assertThat(thrown).isInstanceOf(DepartmentIsNullException.class)
+                        .hasMessageContaining("Малышева");
+            }
+
+            @Test
+            void minSalary() {
+
+                Throwable thrown = catchThrowable(() -> service.minSalary("2"));
+
+                assertThat(thrown).isInstanceOf(DepartmentIsNullException.class)
+                        .hasMessageContaining("Малышева");
+            }
+
+            @Test
+            void findByDepartment() {
+
+                Throwable thrown = catchThrowable(() -> service.findByDepartment("2"));
+
+                assertThat(thrown).isInstanceOf(DepartmentIsNullException.class)
+                        .hasMessageContaining("Малышева");
+            }
+
+            @Test
+            void all() {
+
+                Throwable thrown = catchThrowable(() -> service.all());
+
+                assertThat(thrown).isInstanceOf(DepartmentIsNullException.class)
+                        .hasMessageContaining("Малышева");
+            }
+
+        }
+
+        @Nested
         class SalaryIsNull {
             @BeforeEach
             public void initEach() throws IllegalAccessException {
@@ -112,7 +174,7 @@ class DepartmentServiceTest {
 
                 Throwable thrown = catchThrowable(() -> service.maxSalary("2"));
 
-                assertThat(thrown).isInstanceOf(NullPointerException.class);
+                assertThat(thrown).isInstanceOf(SalaryIsNullException.class);
             }
 
             @Test
@@ -120,7 +182,7 @@ class DepartmentServiceTest {
 
                 Throwable thrown = catchThrowable(() -> service.minSalary("2"));
 
-                assertThat(thrown).isInstanceOf(NullPointerException.class);
+                assertThat(thrown).isInstanceOf(SalaryIsNullException.class);
             }
 
         }

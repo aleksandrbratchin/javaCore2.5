@@ -133,6 +133,89 @@ class DepartmentControllerTest {
     class AllError {
 
         @Nested
+        class DepartmentIsNull {
+            @BeforeEach
+            public void initEach() throws IllegalAccessException {
+                Map<String, Employee> testEmployees = new HashMap<>(
+                        Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", null, 83166.43),
+                                "Козловский Денис", new Employee("Козловский", "Денис", "1", 60250.60),
+                                "Соловьева Серафима", new Employee("Соловьева", "Серафима", "3", 59343.29),
+                                "Макарова Дарья", new Employee("Макарова", "Дарья", "1", 82042.89),
+                                "Лебедева Таисия", new Employee("Лебедева", "Таисия", "5", 72881.88),
+                                "Романов Артём", new Employee("Романов", "Артём", "2", 62761.97),
+                                "Широков Павел", new Employee("Широков", "Павел", "4", 97159.11),
+                                "Кудрявцев Лев", new Employee("Кудрявцев", "Лев", "2", 89845.70),
+                                "Филиппова Алиса", new Employee("Филиппова", "Алиса", "5", 79209.12)
+                        ));
+
+                fieldEmployees.set(repository, testEmployees);
+            }
+
+            @Test
+            void maxSalary() {
+                Map<String, String> uriVariables = new HashMap<>();
+                uriVariables.put("departmentId", "2");
+
+                ResponseEntity<Employee> response
+                        = restTemplate.getForEntity("/employee/department/max-salary?departmentId={departmentId}", Employee.class, uriVariables);
+
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                assertThat(response.getBody().getSalary()).isNull();
+            }
+
+            @Test
+            void minSalary() {
+                Map<String, String> uriVariables = new HashMap<>();
+                uriVariables.put("departmentId", "2");
+
+                ResponseEntity<Employee> response = restTemplate.getForEntity(
+                        "/employee/department/min-salary?departmentId={departmentId}",
+                        Employee.class,
+                        uriVariables
+                );
+
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                assertThat(response.getBody().getSalary()).isNull();
+            }
+
+            @Test
+            void filterByDepartment() {
+                Map<String, String> uriVariables = new HashMap<>();
+                uriVariables.put("departmentId", "2");
+
+                ResponseEntity<Map<String, List<Employee>>> response
+                        = restTemplate.exchange(
+                        "/employee/department/all?departmentId={departmentId}",
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<Map<String, List<Employee>>>() {
+                        },
+                        uriVariables
+                );
+
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                assertThat(response.getBody().size()).isEqualTo(1);
+                assertThat(response.getBody().get("2").size()).isEqualTo(3);
+            }
+
+            @Test
+            void getAll() {
+
+                ResponseEntity<Map<String, List<Employee>>> response
+                        = restTemplate.exchange(
+                        "/employee/department/all",
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<Map<String, List<Employee>>>() {
+                        });
+
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                assertThat(response.getBody().size()).isEqualTo(5);
+            }
+
+        }
+
+        @Nested
         class SalaryIsNull {
             @BeforeEach
             public void initEach() throws IllegalAccessException {
@@ -159,8 +242,8 @@ class DepartmentControllerTest {
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/department/max-salary?departmentId={departmentId}", Employee.class, uriVariables);
 
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-                assertThat(response.getBody()).isNull();
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                assertThat(response.getBody().getSalary()).isNull();
             }
 
             @Test
@@ -171,8 +254,8 @@ class DepartmentControllerTest {
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/department/min-salary?departmentId={departmentId}", Employee.class, uriVariables);
 
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-                assertThat(response.getBody()).isNull();
+                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                assertThat(response.getBody().getSalary()).isNull();
             }
         }
 

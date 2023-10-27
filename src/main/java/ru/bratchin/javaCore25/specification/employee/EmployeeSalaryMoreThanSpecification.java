@@ -1,7 +1,10 @@
 package ru.bratchin.javaCore25.specification.employee;
 
+import ru.bratchin.javaCore25.exception.SalaryIsNullException;
 import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.specification.MySpecification;
+
+import java.util.Optional;
 
 public class EmployeeSalaryMoreThanSpecification extends MySpecification<Employee> {
     private Double salary;
@@ -12,6 +15,11 @@ public class EmployeeSalaryMoreThanSpecification extends MySpecification<Employe
 
     @Override
     public boolean test(Employee employee) {
-        return employee.getSalary() > salary;
+        return Optional.ofNullable(employee.getSalary())
+                .orElseThrow(
+                        () -> new SalaryIsNullException(
+                                employee.getSurname() + " " + employee.getName()
+                        )
+                ) < salary;
     }
 }
