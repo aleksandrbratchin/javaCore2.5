@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.bratchin.javaCore25.exception.DepartmentIsNullException;
 import ru.bratchin.javaCore25.service.api.DepartmentServiceApi;
 
 @RestController
@@ -41,13 +42,22 @@ public class DepartmentController {
         if (departmentId != null) {
             return ResponseEntity.ok(service.findByDepartment(departmentId));
         } else {
-            return ResponseEntity.ok(service.all());
+                return ResponseEntity.ok(service.all());
         }
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void errorParam() {
+    }
+
+
+    /***
+     * Исправление ошибок спринга
+     */
+    @ExceptionHandler(DepartmentIsNullException.class)
+    public ResponseEntity<?> errorDepartment(DepartmentIsNullException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e);
     }
 
 }

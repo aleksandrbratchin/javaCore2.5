@@ -194,7 +194,7 @@ class DepartmentControllerTest {
                 );
 
                 assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-                //assertThat(response.getBody().getMessage()).contains("Малышева"); //todo спросить на разборе
+                assertThat(response.getBody().getMessage()).contains("Малышева");
             }
 
             @Test
@@ -209,7 +209,7 @@ class DepartmentControllerTest {
                         });
 
                 assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-                //assertThat(response.getBody().getMessage()).contains("Малышева"); //todo спросить на разборе
+                assertThat(response.getBody().getMessage()).contains("Малышева");
             }
 
         }
