@@ -8,12 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.service.impl.EmployeeMaxSizeTenService;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,19 +46,17 @@ class EmployeeControllerTest {
 
         @BeforeEach
         public void initEach() throws IllegalAccessException {
-            var testEmployees = new ArrayList<>(
-                    List.of(
-                            new Employee("Малышева", "Амалия"),
-                            new Employee("Козловский", "Денис"),
-                            new Employee("Соловьева", "Серафима"),
-                            new Employee("Макарова", "Дарья"),
-                            new Employee("Лебедева", "Таисия"),
-                            new Employee("Романов", "Артём"),
-                            new Employee("Широков", "Павел"),
-                            new Employee("Кудрявцев", "Лев"),
-                            new Employee("Филиппова", "Алиса")
-                    )
-            );
+            var testEmployees = new HashMap<>(
+                    Map.of("Малышева Амалия", new Employee("Малышева", "Амалия"),
+                            "Козловский Денис", new Employee("Козловский", "Денис"),
+                            "Соловьева Серафима", new Employee("Соловьева", "Серафима"),
+                            "Макарова Дарья", new Employee("Макарова", "Дарья"),
+                            "Лебедева Таисия", new Employee("Лебедева", "Таисия"),
+                            "Романов Артём", new Employee("Романов", "Артём"),
+                            "Широков Павел", new Employee("Широков", "Павел"),
+                            "Кудрявцев Лев", new Employee("Кудрявцев", "Лев"),
+                            "Филиппова Алиса", new Employee("Филиппова", "Алиса")
+                    ));
             fieldEmployees.set(service, testEmployees);
         }
 
@@ -72,13 +71,13 @@ class EmployeeControllerTest {
 
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/add?name={name}&surname={surname}", Employee.class, uriVariables);
-                var employees = (List<Employee>) fieldEmployees.get(service);
+                var employees = (Map<String, Employee>) fieldEmployees.get(service);
 
                 assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
                 assertThat(response.getBody().getSurname()).isEqualTo(uriVariables.get("surname"));
                 assertThat(response.getBody().getName()).isEqualTo(uriVariables.get("name"));
                 assertThat(employees.size()).isEqualTo(10);
-                assertThat(employees).contains(testEmployee);
+                assertThat(employees).containsValue(testEmployee);
             }
 
             @Test
@@ -90,13 +89,13 @@ class EmployeeControllerTest {
 
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/delete?name={name}&surname={surname}", Employee.class, uriVariables);
-                var employees = (List<Employee>) fieldEmployees.get(service);
+                var employees = (Map<String, Employee>) fieldEmployees.get(service);
 
                 assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
                 assertThat(response.getBody().getSurname()).isEqualTo(uriVariables.get("surname"));
                 assertThat(response.getBody().getName()).isEqualTo(uriVariables.get("name"));
                 assertThat(employees.size()).isEqualTo(8);
-                assertThat(employees).doesNotContain(testEmployee);
+                assertThat(employees).doesNotContainValue(testEmployee);
             }
 
             @Test
@@ -108,12 +107,12 @@ class EmployeeControllerTest {
 
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/find?name={name}&surname={surname}", Employee.class, uriVariables);
-                var employees = (List<Employee>) fieldEmployees.get(service);
+                var employees = (Map<String, Employee>) fieldEmployees.get(service);
 
                 assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
                 assertThat(response.getBody().getSurname()).isEqualTo(uriVariables.get("surname"));
                 assertThat(response.getBody().getName()).isEqualTo(uriVariables.get("name"));
-                assertThat(employees).contains(testEmployee);
+                assertThat(employees).containsValue(testEmployee);
                 assertThat(employees.size()).isEqualTo(9);
             }
 
@@ -133,20 +132,18 @@ class EmployeeControllerTest {
             @Test
             void addStorageIsFull() throws IllegalAccessException {
                 Employee testEmployee = new Employee("Иванов", "Иван");
-                var testEmployees = new ArrayList<>(
-                        List.of(
-                                new Employee("Малышева", "Амалия"),
-                                new Employee("Козловский", "Денис"),
-                                new Employee("Соловьева", "Серафима"),
-                                new Employee("Макарова", "Дарья"),
-                                new Employee("Лебедева", "Таисия"),
-                                new Employee("Романов", "Артём"),
-                                new Employee("Широков", "Павел"),
-                                new Employee("Кудрявцев", "Лев"),
-                                new Employee("Белякова", "Антонина"),
-                                new Employee("Филиппова", "Алиса")
-                        )
-                );
+                var testEmployees = new HashMap<>(
+                        Map.of("Малышева Амалия", new Employee("Малышева", "Амалия"),
+                                "Козловский Денис", new Employee("Козловский", "Денис"),
+                                "Соловьева Серафима", new Employee("Соловьева", "Серафима"),
+                                "Макарова Дарья", new Employee("Макарова", "Дарья"),
+                                "Лебедева Таисия", new Employee("Лебедева", "Таисия"),
+                                "Романов Артём", new Employee("Романов", "Артём"),
+                                "Широков Павел", new Employee("Широков", "Павел"),
+                                "Кудрявцев Лев", new Employee("Кудрявцев", "Лев"),
+                                "Белякова Антонина", new Employee("Белякова", "Антонина"),
+                                "Филиппова Алиса", new Employee("Филиппова", "Алиса")
+                        ));
                 fieldEmployees.set(service, testEmployees);
                 Map<String, String> uriVariables = new HashMap<>();
                 uriVariables.put("name", testEmployee.getName());
