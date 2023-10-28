@@ -11,7 +11,7 @@ public interface DepartmentServiceApi {
 
     Employee minSalary(String department);
 
-    Map<String, List<Employee>> findByDepartment(String department);
+    List<Employee> findByDepartment(String department);
 
     Map<String, List<Employee>> all();
 }

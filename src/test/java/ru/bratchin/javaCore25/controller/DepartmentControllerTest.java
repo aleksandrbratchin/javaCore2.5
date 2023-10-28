@@ -98,19 +98,18 @@ class DepartmentControllerTest {
             Map<String, String> uriVariables = new HashMap<>();
             uriVariables.put("departmentId", "2");
 
-            ResponseEntity<Map<String, List<Employee>>> response
+            ResponseEntity<List<Employee>> response
                     = restTemplate.exchange(
                     "/employee/department/all?departmentId={departmentId}",
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<Map<String, List<Employee>>>() {
+                    new ParameterizedTypeReference<>() {
                     },
                     uriVariables
             );
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody().size()).isEqualTo(1);
-            assertThat(response.getBody().get("2").size()).isEqualTo(3);
+            assertThat(response.getBody().size()).isEqualTo(3);
         }
 
         @Test
@@ -299,12 +298,12 @@ class DepartmentControllerTest {
                 Map<String, String> uriVariables = new HashMap<>();
                 uriVariables.put("departmentId", "2");
 
-                ResponseEntity<Map<String, List<Employee>>> response
+                ResponseEntity<List<Employee>> response
                         = restTemplate.exchange(
                         "/employee/department/all?departmentId={departmentId}",
                         HttpMethod.GET,
                         null,
-                        new ParameterizedTypeReference<Map<String, List<Employee>>>() {
+                        new ParameterizedTypeReference<>() {
                         },
                         uriVariables
                 );

@@ -69,18 +69,12 @@ public class DepartmentService implements DepartmentServiceApi {
     }
 
     @Override
-    public Map<String, List<Employee>> findByDepartment(String department) {
+    public List<Employee> findByDepartment(String department) {
         return repository
                 .findAll(new EmployeeEqualsDepartmentSpecification(department))
                 .values()
                 .stream()
-                .collect(Collectors.groupingBy(
-                        employee -> Optional.ofNullable(employee.getDepartment()).orElseThrow(
-                                () -> new DepartmentIsNullException(
-                                        employee.getSurname() + " " + employee.getName()
-                                )
-                        )
-                ));
+                .toList();
     }
 
     @Override

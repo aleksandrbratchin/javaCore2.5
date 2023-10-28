@@ -69,10 +69,9 @@ class DepartmentServiceTest {
 
         @Test
         void findByDepartment() {
-            Map<String, List<Employee>> all = service.findByDepartment("2");
+            List<Employee> all = service.findByDepartment("2");
 
-            assertThat(all.size()).isEqualTo(1);
-            assertThat(all.get("2").size()).isEqualTo(3);
+            assertThat(all.size()).isEqualTo(3);
         }
 
         @Test
@@ -217,10 +216,9 @@ class DepartmentServiceTest {
 
             @Test
             void findByDepartment() {
-                Map<String, List<Employee>> all = service.findByDepartment("2");
+                List<Employee> all = service.findByDepartment("2");
 
                 assertThat(all.size()).isEqualTo(0);
-                assertThat(all.get("2")).isNull();
             }
 
             @Test

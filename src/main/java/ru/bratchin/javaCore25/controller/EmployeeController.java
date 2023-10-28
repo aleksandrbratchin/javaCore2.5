@@ -24,9 +24,11 @@ public class EmployeeController {
     @GetMapping("/add")
     public ResponseEntity<?> add(
             @RequestParam(required = false) @NotBlank String name,
-            @RequestParam(required = false) @NotBlank String surname
+            @RequestParam(required = false) @NotBlank String surname,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) Double salary
     ) {
-        Employee employee = new Employee(surname, name);
+        Employee employee = new Employee(surname, name, department, salary);
         return ResponseEntity.ok(service.add(employee));
     }
 
