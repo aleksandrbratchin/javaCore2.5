@@ -7,4 +7,11 @@ import java.util.NoSuchElementException;
 
 @ResponseStatus(code = HttpStatus.NOT_FOUND)
 public class EmployeeNotFoundException extends NoSuchElementException {
+    public EmployeeNotFoundException() {
+        super();
+    }
+
+    public EmployeeNotFoundException(String message) {
+        super(message);
+    }
 }

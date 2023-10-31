@@ -12,6 +12,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.bratchin.javaCore25.model.entity.Employee;
+import ru.bratchin.javaCore25.repository.impl.EmployeeRepository;
 import ru.bratchin.javaCore25.service.impl.EmployeeMaxSizeTenService;
 
 import java.lang.reflect.Field;
@@ -31,6 +32,9 @@ class EmployeeControllerTest {
     private EmployeeMaxSizeTenService service;
 
     @Autowired
+    private EmployeeRepository repository;
+
+    @Autowired
     private TestRestTemplate restTemplate;
 
     private static Field fieldEmployees;
@@ -40,7 +44,7 @@ class EmployeeControllerTest {
     class TestAddDeleteFind {
         @BeforeAll
         public static void setup() throws NoSuchFieldException {
-            fieldEmployees = EmployeeMaxSizeTenService.class.getDeclaredField("employees");
+            fieldEmployees = EmployeeRepository.class.getDeclaredField("employees");
             fieldEmployees.setAccessible(true);
         }
 
@@ -57,7 +61,7 @@ class EmployeeControllerTest {
                             "Кудрявцев Лев", new Employee("Кудрявцев", "Лев"),
                             "Филиппова Алиса", new Employee("Филиппова", "Алиса")
                     ));
-            fieldEmployees.set(service, testEmployees);
+            fieldEmployees.set(repository, testEmployees);
         }
 
         @Nested
@@ -71,7 +75,7 @@ class EmployeeControllerTest {
 
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/add?name={name}&surname={surname}", Employee.class, uriVariables);
-                var employees = (Map<String, Employee>) fieldEmployees.get(service);
+                var employees = (Map<String, Employee>) fieldEmployees.get(repository);
 
                 assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
                 assertThat(response.getBody().getSurname()).isEqualTo(uriVariables.get("surname"));
@@ -89,7 +93,7 @@ class EmployeeControllerTest {
 
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/delete?name={name}&surname={surname}", Employee.class, uriVariables);
-                var employees = (Map<String, Employee>) fieldEmployees.get(service);
+                var employees = (Map<String, Employee>) fieldEmployees.get(repository);
 
                 assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
                 assertThat(response.getBody().getSurname()).isEqualTo(uriVariables.get("surname"));
@@ -107,7 +111,7 @@ class EmployeeControllerTest {
 
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/find?name={name}&surname={surname}", Employee.class, uriVariables);
-                var employees = (Map<String, Employee>) fieldEmployees.get(service);
+                var employees = (Map<String, Employee>) fieldEmployees.get(repository);
 
                 assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
                 assertThat(response.getBody().getSurname()).isEqualTo(uriVariables.get("surname"));
@@ -144,7 +148,7 @@ class EmployeeControllerTest {
                                 "Белякова Антонина", new Employee("Белякова", "Антонина"),
                                 "Филиппова Алиса", new Employee("Филиппова", "Алиса")
                         ));
-                fieldEmployees.set(service, testEmployees);
+                fieldEmployees.set(repository, testEmployees);
                 Map<String, String> uriVariables = new HashMap<>();
                 uriVariables.put("name", testEmployee.getName());
                 uriVariables.put("surname", testEmployee.getSurname());
@@ -202,7 +206,7 @@ class EmployeeControllerTest {
         @Nested
         class NoParameters {
             @Test
-            void addNotFound() {
+            void add() {
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/add", Employee.class);
 
@@ -210,7 +214,7 @@ class EmployeeControllerTest {
             }
 
             @Test
-            void findNotFound() {
+            void find() {
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/find", Employee.class);
 
@@ -218,7 +222,7 @@ class EmployeeControllerTest {
             }
 
             @Test
-            void deleteNotFound() {
+            void delete() {
                 ResponseEntity<Employee> response
                         = restTemplate.getForEntity("/employee/delete", Employee.class);
 
