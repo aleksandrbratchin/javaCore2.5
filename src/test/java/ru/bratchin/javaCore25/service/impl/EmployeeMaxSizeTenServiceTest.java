@@ -1,89 +1,86 @@
 package ru.bratchin.javaCore25.service.impl;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.bratchin.javaCore25.exception.EmployeeAlreadyAddedException;
 import ru.bratchin.javaCore25.exception.EmployeeNotFoundException;
 import ru.bratchin.javaCore25.exception.EmployeeStorageIsFullException;
 import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.repository.impl.EmployeeRepository;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 
+@ExtendWith(MockitoExtension.class)
 class EmployeeMaxSizeTenServiceTest {
 
     private EmployeeMaxSizeTenService service;
+    @Mock
     private EmployeeRepository repository;
-    private static Field fieldEmployees;
-
-    @BeforeAll
-    public static void setup() throws NoSuchFieldException {
-        fieldEmployees = EmployeeRepository.class.getDeclaredField("employees");
-        fieldEmployees.setAccessible(true);
-    }
 
     @BeforeEach
-    public void initEach() throws IllegalAccessException {
-        repository = new EmployeeRepository();
+    void setUp() {
         service = new EmployeeMaxSizeTenService(repository);
-
-        Map<String, Employee> testEmployees = new HashMap<>(
-                Map.of("Малышева Амалия", new Employee("Малышева", "Амалия"),
-                        "Козловский Денис", new Employee("Козловский", "Денис"),
-                        "Соловьева Серафима", new Employee("Соловьева", "Серафима"),
-                        "Макарова Дарья", new Employee("Макарова", "Дарья"),
-                        "Лебедева Таисия", new Employee("Лебедева", "Таисия"),
-                        "Романов Артём", new Employee("Романов", "Артём"),
-                        "Широков Павел", new Employee("Широков", "Павел"),
-                        "Кудрявцев Лев", new Employee("Кудрявцев", "Лев"),
-                        "Филиппова Алиса", new Employee("Филиппова", "Алиса")
-                ));
-
-        fieldEmployees.set(repository, testEmployees);
     }
 
+    private final Map<String, Employee> correctEmployees = new HashMap<>(
+            Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", "2", 83166.43),
+                    "Козловский Денис", new Employee("Козловский", "Денис", "1", 60250.60),
+                    "Соловьева Серафима", new Employee("Соловьева", "Серафима", "3", 59343.29),
+                    "Макарова Дарья", new Employee("Макарова", "Дарья", "1", 82042.89),
+                    "Лебедева Таисия", new Employee("Лебедева", "Таисия", "5", 72881.88),
+                    "Романов Артём", new Employee("Романов", "Артём", "2", 62761.97),
+                    "Широков Павел", new Employee("Широков", "Павел", "4", 97159.11),
+                    "Кудрявцев Лев", new Employee("Кудрявцев", "Лев", "2", 89845.70),
+                    "Филиппова Алиса", new Employee("Филиппова", "Алиса", "5", 79209.12)
+            ));
+
+
     @Nested
-    class AllSuccess{
+    class AllSuccess {
         @Test
-        void add() throws IllegalAccessException {
+        void add() {
             Employee employee = new Employee("Белякова", "Антонина");
+            Mockito.when(repository.findAll())
+                    .thenReturn(correctEmployees);
+            Mockito.when(repository.create(any(Employee.class)))
+                    .thenReturn(employee);
 
             Employee newEmployee = service.add(employee);
-            var employees = (Map<String, Employee>) fieldEmployees.get(repository);
 
             assertThat(employee).isEqualTo(newEmployee);
-            assertThat(employees.size()).isEqualTo(10);
-            assertThat(employees).containsValue(employee);
         }
 
         @Test
-        void delete() throws IllegalAccessException {
+        void delete() {
             Employee employee = new Employee("Филиппова", "Алиса");
+            Mockito.when(repository.delete(any(Employee.class)))
+                    .thenReturn(employee);
 
             Employee newEmployee = service.delete(employee);
-            var employees = (Map<String, Employee>) fieldEmployees.get(repository);
 
             assertThat(employee).isEqualTo(newEmployee);
-            assertThat(employees.size()).isEqualTo(8);
-            assertThat(employees).doesNotContainValue(employee);
         }
 
         @Test
-        void find() throws IllegalAccessException {
+        void find() {
             Employee employee = new Employee("Филиппова", "Алиса");
+            Mockito.when(repository.findAll())
+                    .thenReturn(correctEmployees);
 
             Employee newEmployee = service.find(employee);
-            var employees = (Map<String, Employee>) fieldEmployees.get(repository);
 
-            assertThat(employee).isEqualTo(newEmployee);
-            assertThat(employees.size()).isEqualTo(9);
+            assertThat(employee.getName()).isEqualTo(newEmployee.getName());
+            assertThat(employee.getSurname()).isEqualTo(newEmployee.getSurname());
         }
     }
 
@@ -91,7 +88,21 @@ class EmployeeMaxSizeTenServiceTest {
     class AllError{
         @Test
         void addStorageIsFull() {
-            service.add(new Employee("Белякова", "Антонина"));
+            Map<String, Employee> Employees = new HashMap<>(
+                    Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", "2", 83166.43),
+                            "Козловский Денис", new Employee("Козловский", "Денис", "1", 60250.60),
+                            "Соловьева Серафима", new Employee("Соловьева", "Серафима", "3", 59343.29),
+                            "Макарова Дарья", new Employee("Макарова", "Дарья", "1", 82042.89),
+                            "Лебедева Таисия", new Employee("Лебедева", "Таисия", "5", 72881.88),
+                            "Романов Артём", new Employee("Романов", "Артём", "2", 62761.97),
+                            "Широков Павел", new Employee("Широков", "Павел", "4", 97159.11),
+                            "Кудрявцев Лев", new Employee("Кудрявцев", "Лев", "2", 89845.70),
+                            "Филиппова Алиса", new Employee("Филиппова", "Алиса", "5", 79209.12),
+                            "Горбачёва Елена", new Employee("Горбачёва", "Елена", "5", 60000.0)
+                    ));
+            Mockito.when(repository.findAll())
+                    .thenReturn(Employees);
+
             Throwable thrown = catchThrowable(() -> service.add(new Employee("Иванов", "Иван")));
 
             assertThat(thrown).isInstanceOf(EmployeeStorageIsFullException.class);
@@ -99,6 +110,11 @@ class EmployeeMaxSizeTenServiceTest {
 
         @Test
         void addAlreadyAdded() {
+            Mockito.when(repository.findAll())
+                    .thenReturn(correctEmployees);
+            Mockito.when(repository.create(any(Employee.class)))
+                    .thenThrow(EmployeeAlreadyAddedException.class);
+
             Throwable thrown = catchThrowable(() -> service.add(new Employee("Филиппова", "Алиса")));
 
             assertThat(thrown).isInstanceOf(EmployeeAlreadyAddedException.class);
@@ -106,6 +122,9 @@ class EmployeeMaxSizeTenServiceTest {
 
         @Test
         void deleteNotFound() {
+            Mockito.when(repository.delete(any(Employee.class)))
+                    .thenThrow(EmployeeNotFoundException.class);
+
             Throwable thrown = catchThrowable(() -> service.delete(new Employee("Белякова", "Антонина")));
 
             assertThat(thrown).isInstanceOf(EmployeeNotFoundException.class);
@@ -113,6 +132,9 @@ class EmployeeMaxSizeTenServiceTest {
 
         @Test
         void findNotFound() {
+            Mockito.when(repository.findAll())
+                    .thenReturn(correctEmployees);
+
             Throwable thrown = catchThrowable(() -> service.find(new Employee("Белякова", "Антонина")));
 
             assertThat(thrown).isInstanceOf(EmployeeNotFoundException.class);

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.bratchin.javaCore25.model.entity.Employee;
-import ru.bratchin.javaCore25.repository.api.MyRepository;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -16,11 +15,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 class EmployeeRepositoryTest {
-    private MyRepository<Employee, String> repository;
+    private EmployeeRepository repository;
 
     private static Field fieldEmployees;
-
-    private List<Employee> testEmployees;
 
     @BeforeAll
     public static void setup() throws NoSuchFieldException {
@@ -29,7 +26,7 @@ class EmployeeRepositoryTest {
     }
 
     @BeforeEach
-    public void initEach() throws NoSuchFieldException, IllegalAccessException {
+    public void initEach() throws IllegalAccessException {
         repository = new EmployeeRepository();
         Map<String, Employee> testEmployees = new HashMap<>(
                 Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", "2", 83166.43),

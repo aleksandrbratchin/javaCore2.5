@@ -1,142 +1,91 @@
 package ru.bratchin.javaCore25.controller;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.bratchin.javaCore25.exception.EmployeeAlreadyAddedException;
+import ru.bratchin.javaCore25.exception.EmployeeNotFoundException;
 import ru.bratchin.javaCore25.model.entity.Employee;
-import ru.bratchin.javaCore25.repository.impl.EmployeeRepository;
-import ru.bratchin.javaCore25.service.impl.EmployeeMaxSizeTenService;
+import ru.bratchin.javaCore25.service.api.EmployeeService;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
+@AutoConfigureMockMvc
 class EmployeeControllerTest {
 
     @Autowired
-    private EmployeeController controller;
+    private MockMvc mockMvc;
 
-    @Autowired
-    private EmployeeMaxSizeTenService service;
-
-    @Autowired
-    private EmployeeRepository repository;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    private static Field fieldEmployees;
-
+    @MockBean
+    private EmployeeService service;
 
     @Nested
     class TestAddDeleteFind {
-        @BeforeAll
-        public static void setup() throws NoSuchFieldException {
-            fieldEmployees = EmployeeRepository.class.getDeclaredField("employees");
-            fieldEmployees.setAccessible(true);
-        }
-
-        @BeforeEach
-        public void initEach() throws IllegalAccessException {
-            var testEmployees = new HashMap<>(
-                    Map.of("Малышева Амалия", new Employee("Малышева", "Амалия"),
-                            "Козловский Денис", new Employee("Козловский", "Денис"),
-                            "Соловьева Серафима", new Employee("Соловьева", "Серафима"),
-                            "Макарова Дарья", new Employee("Макарова", "Дарья"),
-                            "Лебедева Таисия", new Employee("Лебедева", "Таисия"),
-                            "Романов Артём", new Employee("Романов", "Артём"),
-                            "Широков Павел", new Employee("Широков", "Павел"),
-                            "Кудрявцев Лев", new Employee("Кудрявцев", "Лев"),
-                            "Филиппова Алиса", new Employee("Филиппова", "Алиса")
-                    ));
-            fieldEmployees.set(repository, testEmployees);
-        }
 
         @Nested
         class AllSuccess {
             @Test
-            void add() throws IllegalAccessException {
+            void add() throws Exception {
                 Employee testEmployee = new Employee("Белякова", "Антонина");
-                Map<String, String> uriVariables = new HashMap<>();
-                uriVariables.put("name", testEmployee.getName());
-                uriVariables.put("surname", testEmployee.getSurname());
+                Mockito.when(service.add(any(Employee.class)))
+                        .thenReturn(testEmployee);
 
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/add?name={name}&surname={surname}", Employee.class, uriVariables);
-                var employees = (Map<String, Employee>) fieldEmployees.get(repository);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-                assertThat(response.getBody().getSurname()).isEqualTo(uriVariables.get("surname"));
-                assertThat(response.getBody().getName()).isEqualTo(uriVariables.get("name"));
-                assertThat(employees.size()).isEqualTo(10);
-                assertThat(employees).containsValue(testEmployee);
+                mockMvc.perform(get("/employee/add")
+                                .param("name", testEmployee.getName())
+                                .param("surname", testEmployee.getSurname())
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.name").value("Антонина"))
+                        .andExpect(jsonPath("$.surname").value("Белякова"));
             }
 
             @Test
-            void delete() throws IllegalAccessException {
+            void delete() throws Exception {
                 Employee testEmployee = new Employee("Кудрявцев", "Лев");
-                Map<String, String> uriVariables = new HashMap<>();
-                uriVariables.put("name", testEmployee.getName());
-                uriVariables.put("surname", testEmployee.getSurname());
+                Mockito.when(service.delete(any(Employee.class)))
+                        .thenReturn(testEmployee);
 
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/delete?name={name}&surname={surname}", Employee.class, uriVariables);
-                var employees = (Map<String, Employee>) fieldEmployees.get(repository);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-                assertThat(response.getBody().getSurname()).isEqualTo(uriVariables.get("surname"));
-                assertThat(response.getBody().getName()).isEqualTo(uriVariables.get("name"));
-                assertThat(employees.size()).isEqualTo(8);
-                assertThat(employees).doesNotContainValue(testEmployee);
+                mockMvc.perform(get("/employee/delete")
+                                .param("name", testEmployee.getName())
+                                .param("surname", testEmployee.getSurname())
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.name").value("Лев"))
+                        .andExpect(jsonPath("$.surname").value("Кудрявцев"));
             }
 
             @Test
-            void find() throws IllegalAccessException {
+            void find() throws Exception {
                 Employee testEmployee = new Employee("Кудрявцев", "Лев");
-                Map<String, String> uriVariables = new HashMap<>();
-                uriVariables.put("name", testEmployee.getName());
-                uriVariables.put("surname", testEmployee.getSurname());
+                Mockito.when(service.find(any(Employee.class)))
+                        .thenReturn(testEmployee);
 
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/find?name={name}&surname={surname}", Employee.class, uriVariables);
-                var employees = (Map<String, Employee>) fieldEmployees.get(repository);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-                assertThat(response.getBody().getSurname()).isEqualTo(uriVariables.get("surname"));
-                assertThat(response.getBody().getName()).isEqualTo(uriVariables.get("name"));
-                assertThat(employees).containsValue(testEmployee);
-                assertThat(employees.size()).isEqualTo(9);
+                mockMvc.perform(get("/employee/find")
+                                .param("name", testEmployee.getName())
+                                .param("surname", testEmployee.getSurname())
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.name").value("Лев"))
+                        .andExpect(jsonPath("$.surname").value("Кудрявцев"));
             }
 
             @Test
-            void findAll() {
-                ResponseEntity<List<Employee>> response
-                        = restTemplate.exchange("/employee/findAll", HttpMethod.GET, null, new ParameterizedTypeReference<List<Employee>>(){});
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-                assertThat(response.getBody().size()).isEqualTo(9);
-            }
-
-        }
-
-        @Nested
-        class AllError {
-            @Test
-            void addStorageIsFull() throws IllegalAccessException {
-                Employee testEmployee = new Employee("Иванов", "Иван");
-                var testEmployees = new HashMap<>(
+            void findAll() throws Exception {
+                Map<String, Employee> correctEmployees = new HashMap<>(
                         Map.of("Малышева Амалия", new Employee("Малышева", "Амалия"),
                                 "Козловский Денис", new Employee("Козловский", "Денис"),
                                 "Соловьева Серафима", new Employee("Соловьева", "Серафима"),
@@ -145,56 +94,69 @@ class EmployeeControllerTest {
                                 "Романов Артём", new Employee("Романов", "Артём"),
                                 "Широков Павел", new Employee("Широков", "Павел"),
                                 "Кудрявцев Лев", new Employee("Кудрявцев", "Лев"),
-                                "Белякова Антонина", new Employee("Белякова", "Антонина"),
                                 "Филиппова Алиса", new Employee("Филиппова", "Алиса")
                         ));
-                fieldEmployees.set(repository, testEmployees);
-                Map<String, String> uriVariables = new HashMap<>();
-                uriVariables.put("name", testEmployee.getName());
-                uriVariables.put("surname", testEmployee.getSurname());
+                Mockito.when(service.findAll())
+                        .thenReturn(correctEmployees.values()
+                                .stream().toList());
 
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/add?name={name}&surname={surname}", Employee.class, uriVariables);
+                mockMvc.perform(get("/employee/findAll")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$", hasSize(9)))
+                        .andExpect(jsonPath("$.*", hasSize(9)));
+            }
 
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Nested
+        class AllError {
+            @Test
+            void addStorageIsFull() throws Exception {
+                Mockito.when(service.add(any(Employee.class)))
+                        .thenThrow(EmployeeAlreadyAddedException.class);
+
+                mockMvc.perform(get("/employee/add")
+                                .param("name", "Иван")
+                                .param("surname", "Иванов")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isBadRequest());
             }
 
             @Test
-            void addAlreadyAdded() {
-                Employee testEmployee = new Employee("Кудрявцев", "Лев");
-                Map<String, String> uriVariables = new HashMap<>();
-                uriVariables.put("name", testEmployee.getName());
-                uriVariables.put("surname", testEmployee.getSurname());
+            void addAlreadyAdded() throws Exception {
+                Mockito.when(service.add(any(Employee.class)))
+                        .thenThrow(EmployeeAlreadyAddedException.class);
 
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/add?name={name}&surname={surname}", Employee.class, uriVariables);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                mockMvc.perform(get("/employee/add")
+                                .param("name", "Иван")
+                                .param("surname", "Иванов")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isBadRequest());
             }
 
             @Test
-            void deleteNotFound() {
-                Map<String, String> uriVariables = new HashMap<>();
-                uriVariables.put("name", "Антонина");
-                uriVariables.put("surname", "Белякова");
+            void deleteNotFound() throws Exception {
+                Mockito.when(service.delete(any(Employee.class)))
+                        .thenThrow(EmployeeNotFoundException.class);
 
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/delete?name={name}&surname={surname}", Employee.class, uriVariables);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                mockMvc.perform(get("/employee/delete")
+                                .param("name", "Иван")
+                                .param("surname", "Иванов")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isNotFound());
             }
 
             @Test
-            void findNotFound() {
-                Employee testEmployee = new Employee("Иванов", "Иван");
-                Map<String, String> uriVariables = new HashMap<>();
-                uriVariables.put("name", testEmployee.getName());
-                uriVariables.put("surname", testEmployee.getSurname());
+            void findNotFound() throws Exception {
+                Mockito.when(service.find(any(Employee.class)))
+                        .thenThrow(EmployeeNotFoundException.class);
 
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/find?name={name}&surname={surname}", Employee.class, uriVariables);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                mockMvc.perform(get("/employee/find")
+                                .param("name", "Иван")
+                                .param("surname", "Иванов")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isNotFound());
             }
         }
 
@@ -206,68 +168,58 @@ class EmployeeControllerTest {
         @Nested
         class NoParameters {
             @Test
-            void add() {
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/add", Employee.class);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            void add() throws Exception {
+                mockMvc.perform(get("/employee/add")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isBadRequest());
             }
 
             @Test
-            void find() {
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/find", Employee.class);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            void find() throws Exception {
+                mockMvc.perform(get("/employee/find")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isBadRequest());
             }
 
             @Test
-            void delete() {
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/delete", Employee.class);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            void delete() throws Exception {
+                mockMvc.perform(get("/employee/delete")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isBadRequest());
             }
 
         }
 
         @Nested
         class ParametersIsEmpty {
-            private static Map<String, String> uriVariables;
 
-            @BeforeAll
-            public static void setup() {
-                uriVariables = new HashMap<>();
-                uriVariables.put("name", null);
-                uriVariables.put("surname", null);
+            @Test
+            void add() throws Exception {
+                mockMvc.perform(get("/employee/add")
+                                .param("name", "")
+                                .param("surname", "")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isBadRequest());
             }
 
             @Test
-            void add() {
-
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/add?name={name}&surname={surname}", Employee.class, uriVariables);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            void delete() throws Exception {
+                mockMvc.perform(get("/employee/delete")
+                                .param("name", "")
+                                .param("surname", "")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isBadRequest());
             }
 
             @Test
-            void delete() {
-
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/delete?name={name}&surname={surname}", Employee.class, uriVariables);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            void find() throws Exception {
+                mockMvc.perform(get("/employee/find")
+                                .param("name", "")
+                                .param("surname", "")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isBadRequest());
             }
 
-            @Test
-            void find() {
-
-                ResponseEntity<Employee> response
-                        = restTemplate.getForEntity("/employee/find?name={name}&surname={surname}", Employee.class, uriVariables);
-
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            }
         }
 
     }

@@ -93,4 +93,15 @@ public class DepartmentService implements DepartmentServiceApi {
                         )
                 );
     }
+
+    @Override
+    public Double sum(String department) {
+        return sum(
+                allEmployeesInTheDepartment(department)
+        );
+    }
+
+    private Double sum(List<Employee> employees) {
+        return employees.stream().mapToDouble(Employee::getSalary).sum();
+    }
 }

@@ -8,9 +8,12 @@ import ru.bratchin.javaCore25.specification.MySpecification;
 import java.util.Optional;
 
 public class EmployeeSalaryLessThanSpecification extends MySpecification<Employee> {
-    private Double salary;
+    private final Double salary;
 
     public EmployeeSalaryLessThanSpecification(Double salary) {
+        if (salary == null) {
+            throw new SalaryIsNullException();
+        }
         this.salary = salary;
     }
 
