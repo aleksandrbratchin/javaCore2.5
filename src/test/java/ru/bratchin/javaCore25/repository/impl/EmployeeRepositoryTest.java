@@ -2,9 +2,14 @@ package ru.bratchin.javaCore25.repository.impl;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import ru.bratchin.javaCore25.exception.EmployeeAlreadyAddedException;
 import ru.bratchin.javaCore25.model.entity.Employee;
-import ru.bratchin.javaCore25.repository.api.MyRepository;
+import ru.bratchin.javaCore25.specification.employee.EmployeeEqualsDepartmentSpecification;
+import ru.bratchin.javaCore25.specification.employee.EmployeeSalaryLessThanSpecification;
+import ru.bratchin.javaCore25.specification.employee.EmployeeSalaryMoreThanSpecification;
+import ru.bratchin.javaCore25.specification.employee.EmployeeSpecification;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -16,11 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 class EmployeeRepositoryTest {
-    private MyRepository<Employee, String> repository;
+    private EmployeeRepository repository;
 
     private static Field fieldEmployees;
-
-    private List<Employee> testEmployees;
 
     @BeforeAll
     public static void setup() throws NoSuchFieldException {
@@ -29,7 +32,7 @@ class EmployeeRepositoryTest {
     }
 
     @BeforeEach
-    public void initEach() throws NoSuchFieldException, IllegalAccessException {
+    public void initEach() throws IllegalAccessException {
         repository = new EmployeeRepository();
         Map<String, Employee> testEmployees = new HashMap<>(
                 Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", "2", 83166.43),
@@ -46,94 +49,85 @@ class EmployeeRepositoryTest {
         fieldEmployees.set(repository, testEmployees);
     }
 
-    @Test
-    void create() throws IllegalAccessException {
+    @Nested
+    class Success {
+        @Test
+        void create() throws IllegalAccessException {
 
-        repository.create(new Employee("Иванов", "Иван", "1", 60250.60));
-        var employees = (Map<String, Employee>) fieldEmployees.get(repository);
+            repository.create(new Employee("Иванов", "Иван", "1", 60250.60));
+            var employees = (Map<String, Employee>) fieldEmployees.get(repository);
 
-        assertThat(employees.size()).isEqualTo(11);
-    }
-
-    @Test
-    void createList() throws IllegalAccessException {
-
-        repository.create(
-                List.of(
-                        new Employee("Сидоров", "Семен", "2", 83166.43),
-                        new Employee("Петров", "Петр", "1", 60250.60)
-                )
-        );
-        var employees = (Map<String, Employee>) fieldEmployees.get(repository);
-
-        assertThat(employees.size()).isEqualTo(12);
-    }
-
-    @Test
-    void findAll() throws IllegalAccessException {
-
-        var employees = repository.findAll();
-
-        assertThat(employees.size()).isEqualTo(10);
-    }
-
-/*    @Test
-    void findAllByDepartment() throws IllegalAccessException {
-        fieldEmployees.set(repository, testEmployees);
-
-        List<Employee> employees = repository.findAll(new EmployeeEqualsDepartmentSpecification("5"));
-
-        assertThat(employees.size()).isEqualTo(2);
-    }*/
-
-/*    @Test
-    void findOneById() throws IllegalAccessException {
-        int id = 2;
-        fieldEmployees.set(repository, testEmployees);
-
-        Employee employees = repository.findOne(new EmployeeEqualsIdSpecification(id)).get();
-
-        assertThat(employees.getPatronymic()).isEqualTo(testEmployees.get(id - 1).getPatronymic());
-    }*/
-
-/*    @Test
-    void update() throws IllegalAccessException {
-        fieldEmployees.set(repository, testEmployees);
-        var employees = (Map<String, Employee>) fieldEmployees.get(repository);
-        Employee employee = employees.get(3);
-        employee.setSalary(100000D);
-        employee.setDepartment("10");
-
-        repository.update(employee);
-
-        employees = (List<Employee>) fieldEmployees.get(repository);
-        assertThat(employees).contains(employee);
-    }*/
-
-/*    @Test
-    void updateError() {
-        var test = new Employee(-1, "Тест", "Тест", "Тест", "1", 0D);
-        Throwable thrown = catchThrowable(() -> repository.update(test));
-
-        assertThat(thrown).isInstanceOf(NoSuchElementException.class)
-                .hasMessage("Попытка найти несуществующий элемент");
-    }*/
-
-/*    @Test
-    void updateList() throws IllegalAccessException {
-        fieldEmployees.set(repository, testEmployees);
-        var employees = (Map<String, Employee>) fieldEmployees.get(repository);
-        List<Employee> employeesUpd = employees.subList(2, 5);
-        for (Employee employee : employeesUpd) {
-            employee.setSalary(100000D);
-            employee.setDepartment("10");
+            assertThat(employees.size()).isEqualTo(11);
         }
 
-        repository.update(employeesUpd);
+        @Test
+        void createList() throws IllegalAccessException {
 
-        employees = (Map<String, Employee>) fieldEmployees.get(repository);
-        assertThat(employees).containsAll(employeesUpd);
-    }*/
+            repository.create(
+                    List.of(
+                            new Employee("Сидоров", "Семён", "2", 83166.43),
+                            new Employee("Петров", "Петр", "1", 60250.60)
+                    )
+            );
+            var employees = (Map<String, Employee>) fieldEmployees.get(repository);
+
+            assertThat(employees.size()).isEqualTo(12);
+        }
+
+        @Test
+        void findAllFilterByDepartment() {
+
+            var employees = repository.findAll(new EmployeeEqualsDepartmentSpecification("2"));
+
+            assertThat(employees.size()).isEqualTo(3);
+        }
+
+        @Test
+        void findAllFilterBySalaryMore() {
+
+            var employees = repository.findAll(new EmployeeSalaryMoreThanSpecification(75000.0));
+
+            assertThat(employees.size()).isEqualTo(6);
+        }
+
+        @Test
+        void findAllFilterBySalaryLess() {
+
+            var employees = repository.findAll(new EmployeeSalaryLessThanSpecification(75000.0));
+
+            assertThat(employees.size()).isEqualTo(4);
+        }
+
+        @Test
+        void findAll() {
+
+            var employees = repository.findAll();
+
+            assertThat(employees.size()).isEqualTo(10);
+        }
+
+        @Test
+        void findOne() {
+
+            Employee employee = repository.findOne(new EmployeeSpecification(
+                    new Employee("Малышева", "Амалия")
+            )).get();
+
+            assertThat(employee.getSurname()).isEqualTo("Малышева");
+            assertThat(employee.getName()).isEqualTo("Амалия");
+        }
+    }
+
+
+    @Nested
+    class Error {
+        @Test
+        void create() {
+            Throwable thrown = catchThrowable(() -> repository.create(new Employee("Малышева", "Амалия")));
+
+            assertThat(thrown).isInstanceOf(EmployeeAlreadyAddedException.class);
+        }
+    }
 
     @Test
     void delete() throws IllegalAccessException {

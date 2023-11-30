@@ -14,4 +14,6 @@ public interface DepartmentServiceApi {
     List<Employee> findByDepartment(String department);
 
     Map<String, List<Employee>> all();
+
+    Double sum(String department);
 }

@@ -39,7 +39,7 @@ public class EmployeeMaxSizeTenService implements EmployeeService {
     public Employee find(Employee employee) {
         var key = getKey(employee);
         var allEmployee = repository.findAll();
-        if (repository.findAll().containsKey(key)) {
+        if (allEmployee.containsKey(key)) {
             return allEmployee.get(key);
         } else {
             throw new EmployeeNotFoundException();
