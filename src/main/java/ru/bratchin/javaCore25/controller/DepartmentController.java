@@ -1,17 +1,14 @@
 package ru.bratchin.javaCore25.controller;
 
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.bratchin.javaCore25.exception.DepartmentIsNullException;
 import ru.bratchin.javaCore25.service.api.DepartmentServiceApi;
 
 @RestController
 @RequestMapping("/department")
-@Validated
 public class DepartmentController {
 
     private final DepartmentServiceApi service;
@@ -43,16 +40,15 @@ public class DepartmentController {
 
     @GetMapping("/{id}/employees")
     public ResponseEntity<?> filterByDepartment(
-            @RequestParam String departmentId
+            @PathVariable("id") String departmentId
     ) {
         return ResponseEntity.ok(service.findByDepartment(departmentId));
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public void errorParam() {
+    @GetMapping("")
+    public ResponseEntity<?> filterByDepartment() {
+        return ResponseEntity.ok(service.all());
     }
-
 
     /***
      * Исправление ошибок спринга

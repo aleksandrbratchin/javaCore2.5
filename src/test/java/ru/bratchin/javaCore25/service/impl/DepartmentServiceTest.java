@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.bratchin.javaCore25.exception.DepartmentIsNullException;
+import ru.bratchin.javaCore25.exception.SalaryIsNullException;
 import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.repository.impl.EmployeeRepository;
 import ru.bratchin.javaCore25.specification.employee.EmployeeEqualsDepartmentSpecification;
@@ -103,39 +104,6 @@ class DepartmentServiceTest {
 
             assertThat(sum.toString()).startsWith("235774.09");
         }
-    }
-
-
-    @Nested
-    class Error {
-
-
-        @Nested
-        class DepartmentIsNull {
-
-            private final Map<String, Employee> departments = Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", null, 83166.43),
-                    "Козловский Денис", new Employee("Козловский", "Денис", "1", 60250.60),
-                    "Соловьева Серафима", new Employee("Соловьева", "Серафима", "3", 59343.29),
-                    "Макарова Дарья", new Employee("Макарова", "Дарья", "1", 82042.89),
-                    "Лебедева Таисия", new Employee("Лебедева", "Таисия", "5", 72881.88),
-                    "Романов Артём", new Employee("Романов", "Артём", "2", 62761.97),
-                    "Широков Павел", new Employee("Широков", "Павел", "4", 97159.11),
-                    "Кудрявцев Лев", new Employee("Кудрявцев", "Лев", "2", 89845.70),
-                    "Филиппова Алиса", new Employee("Филиппова", "Алиса", "5", 79209.12)
-            );
-
-            @Test
-            void all() {
-                Mockito.when(repository.findAll())
-                        .thenReturn(departments);
-
-                Throwable thrown = catchThrowable(() -> service.all());
-
-                assertThat(thrown).isInstanceOf(DepartmentIsNullException.class)
-                        .hasMessageContaining("Малышева");
-            }
-
-        }
 
         @Nested
         class EmployeesIsEmpty {
@@ -189,6 +157,85 @@ class DepartmentServiceTest {
 
                 assertThat(sum).isEqualTo(0);
             }
+        }
+
+    }
+
+
+    @Nested
+    class Error {
+
+
+        @Nested
+        class DepartmentIsNull {
+
+            private final Map<String, Employee> departments = Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", null, 83166.43),
+                    "Козловский Денис", new Employee("Козловский", "Денис", "1", 60250.60),
+                    "Соловьева Серафима", new Employee("Соловьева", "Серафима", "3", 59343.29),
+                    "Макарова Дарья", new Employee("Макарова", "Дарья", "1", 82042.89),
+                    "Лебедева Таисия", new Employee("Лебедева", "Таисия", "5", 72881.88),
+                    "Романов Артём", new Employee("Романов", "Артём", "2", 62761.97),
+                    "Широков Павел", new Employee("Широков", "Павел", "4", 97159.11),
+                    "Кудрявцев Лев", new Employee("Кудрявцев", "Лев", "2", 89845.70),
+                    "Филиппова Алиса", new Employee("Филиппова", "Алиса", "5", 79209.12)
+            );
+
+            @Test
+            void all() {
+                Mockito.when(repository.findAll())
+                        .thenReturn(departments);
+
+                Throwable thrown = catchThrowable(() -> service.all());
+
+                assertThat(thrown).isInstanceOf(DepartmentIsNullException.class)
+                        .hasMessageContaining("Малышева");
+            }
+
+        }
+
+        @Nested
+        class SalaryIsNull {
+
+            private final Map<String, Employee> departmentTwoSalaryIsNull = new HashMap<>(
+                    Map.of("Малышева Амалия", new Employee("Малышева", "Амалия", "2", null),
+                            "Романов Артём", new Employee("Романов", "Артём", "2", 62761.97),
+                            "Кудрявцев Лев", new Employee("Кудрявцев", "Лев", "2", 89845.70)
+                    ));
+
+            @Test
+            void maxSalary() {
+                Mockito.when(repository.findAll(any(EmployeeEqualsDepartmentSpecification.class)))
+                        .thenReturn(departmentTwoSalaryIsNull);
+
+                Throwable thrown = catchThrowable(() -> service.maxSalary("2"));
+
+                assertThat(thrown).isInstanceOf(SalaryIsNullException.class)
+                        .hasMessageContaining("Малышева");
+            }
+
+            @Test
+            void minSalary() {
+                Mockito.when(repository.findAll(any(EmployeeEqualsDepartmentSpecification.class)))
+                        .thenReturn(departmentTwoSalaryIsNull);
+
+                Throwable thrown = catchThrowable(() -> service.minSalary("2"));
+
+                assertThat(thrown).isInstanceOf(SalaryIsNullException.class)
+                        .hasMessageContaining("Малышева");
+            }
+
+            @Test
+            void sum() {
+                Mockito.when(repository.findAll(any(EmployeeEqualsDepartmentSpecification.class)))
+                        .thenReturn(departmentTwoSalaryIsNull);
+
+                Throwable thrown = catchThrowable(() -> service.sum("2"));
+
+                assertThat(thrown).isInstanceOf(SalaryIsNullException.class)
+                        .hasMessageContaining("Малышева");
+            }
+
+
         }
 
     }

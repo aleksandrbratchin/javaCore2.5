@@ -102,6 +102,11 @@ public class DepartmentService implements DepartmentServiceApi {
     }
 
     private Double sum(List<Employee> employees) {
-        return employees.stream().mapToDouble(Employee::getSalary).sum();
+        return employees.stream().mapToDouble(
+                value ->
+                        Optional.ofNullable(value.getSalary()).orElseThrow(
+                                () -> new SalaryIsNullException(value.getSurname() + " " + value.getName())
+                        )
+        ).sum();
     }
 }

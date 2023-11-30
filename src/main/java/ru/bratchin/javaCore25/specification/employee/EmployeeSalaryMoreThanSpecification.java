@@ -23,6 +23,6 @@ public class EmployeeSalaryMoreThanSpecification extends MySpecification<Employe
                         () -> new SalaryIsNullException(
                                 employee.getSurname() + " " + employee.getName()
                         )
-                ) < salary;
+                ) > salary;
     }
 }

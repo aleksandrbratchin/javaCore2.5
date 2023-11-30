@@ -21,7 +21,7 @@ class EmployeeSalaryMoreThanSpecificationTest {
 
             Boolean test = specification.test(correctEmployee);
 
-            assertThat(test).isTrue();
+            assertThat(test).isFalse();
         }
 
         @Test
@@ -30,7 +30,7 @@ class EmployeeSalaryMoreThanSpecificationTest {
 
             Boolean test = specification.test(correctEmployee);
 
-            assertThat(test).isFalse();
+            assertThat(test).isTrue();
         }
 
         @Test

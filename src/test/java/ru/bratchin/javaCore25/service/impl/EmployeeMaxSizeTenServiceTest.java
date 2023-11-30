@@ -14,6 +14,7 @@ import ru.bratchin.javaCore25.model.entity.Employee;
 import ru.bratchin.javaCore25.repository.impl.EmployeeRepository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +47,7 @@ class EmployeeMaxSizeTenServiceTest {
 
 
     @Nested
-    class AllSuccess {
+    class Success {
         @Test
         void add() {
             Employee employee = new Employee("Белякова", "Антонина");
@@ -81,6 +82,16 @@ class EmployeeMaxSizeTenServiceTest {
 
             assertThat(employee.getName()).isEqualTo(newEmployee.getName());
             assertThat(employee.getSurname()).isEqualTo(newEmployee.getSurname());
+        }
+
+        @Test
+        void findAll() {
+            Mockito.when(repository.findAll())
+                    .thenReturn(correctEmployees);
+
+            List<Employee> all = service.findAll();
+
+            assertThat(all.size()).isEqualTo(9);
         }
     }
 
